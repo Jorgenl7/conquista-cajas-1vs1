@@ -4,7 +4,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #14532d66, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #0d94884d, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #05966945, transparent 62%);
-  --bg-photo: url("assets/bg-menu-dark.jpg");
+  --bg-photo: url("assets/bg-menu-dark.jpg?v=2");
   --card: #101c16;
   --card-border: #24392f;
   --card-highlight: rgba(255, 255, 255, 0.045);
@@ -45,7 +45,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #bbf7d0aa, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #99f6e499, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #d9f99d99, transparent 62%);
-  --bg-photo: url("assets/bg-menu-light.jpg");
+  --bg-photo: url("assets/bg-menu-light.jpg?v=2");
   --card: #ffffff;
   --card-border: #dbebe1;
   --card-highlight: rgba(255, 255, 255, 0.7);
