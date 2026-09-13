@@ -4,6 +4,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #14532d66, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #0d94884d, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #05966945, transparent 62%);
+  --bg-photo: url("assets/bg-menu.jpg");
   --card: #101c16;
   --card-border: #24392f;
   --card-highlight: rgba(255, 255, 255, 0.045);
@@ -44,6 +45,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #bbf7d0aa, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #99f6e499, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #d9f99d99, transparent 62%);
+  --bg-photo: none;
   --card: #ffffff;
   --card-border: #dbebe1;
   --card-highlight: rgba(255, 255, 255, 0.7);
@@ -93,8 +95,11 @@ body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   background-color: var(--bg);
-  background-image: var(--bg-glow);
-  background-attachment: fixed;
+  background-image: var(--bg-glow), var(--bg-photo);
+  background-size: auto, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
   color: var(--text);
   min-height: 100vh;
   display: flex;
@@ -1277,7 +1282,7 @@ header h1,
    ============================================================ */
 
 :root {
-  --shell-grad: linear-gradient(165deg, #062f2a 0%, #0b2a4a 55%, #10162e 100%);
+  --shell-grad: linear-gradient(165deg, rgba(6, 47, 42, 0.5) 0%, rgba(11, 42, 74, 0.4) 55%, rgba(16, 22, 46, 0.62) 100%);
   --shell-glass-bg: rgba(255, 255, 255, 0.08);
   --shell-glass-border: rgba(255, 255, 255, 0.14);
   --shell-glass-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
@@ -1314,7 +1319,11 @@ body.shell-mode > .app > header {
   z-index: 5;
   display: flex;
   flex-direction: column;
-  background: var(--shell-grad);
+  background-color: var(--bg);
+  background-image: var(--shell-grad), var(--bg-photo);
+  background-size: auto, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
   color: var(--shell-text);
   animation: screen-in 0.35s ease;
 }
