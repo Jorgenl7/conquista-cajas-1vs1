@@ -20,7 +20,7 @@ from game import (
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*", ping_timeout=60, ping_interval=25)
 fastapi_app = FastAPI()
 socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
 

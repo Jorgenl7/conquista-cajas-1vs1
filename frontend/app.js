@@ -1446,7 +1446,7 @@ socket.on("rejoin_failed", () => {
   goHome();
 });
 
-/* ---------- Arranque ---------- */
+/* ---------- Arranque y reconexion automatica ---------- */
 
 function getRoomCodeFromUrl() {
   const params = new URLSearchParams(location.search);
@@ -1454,7 +1454,7 @@ function getRoomCodeFromUrl() {
   return code ? code.toUpperCase().slice(0, 5) : null;
 }
 
-(function boot() {
+function restoreSessionOrGoHome() {
   let session = null;
   try {
     session = JSON.parse(sessionStorage.getItem("cc1v1_session") || "null");
@@ -1489,4 +1489,27 @@ function getRoomCodeFromUrl() {
   }
 
   goHome();
-})();
+}
+
+let hasConnectedBefore = false;
+
+socket.on("connect", () => {
+  if (!hasConnectedBefore) {
+    hasConnectedBefore = true;
+    restoreSessionOrGoHome();
+    return;
+  }
+
+  /* El socket se ha reconectado solo (wifi intermitente, el movil se ha
+     "dormido", un corte breve del proxy del hosting...) sin que la pagina se
+     recargara. Sin esto, el servidor nunca se entera de que este cliente es
+     el mismo jugador de antes y el rival acaba viendo "se ha desconectado"
+     aunque el otro siga ahi jugando. Si teniamos una partida activa, la
+     recuperamos sin perder el sitio. */
+  if (myToken) {
+    stopTurnTimer();
+    waitingText.textContent = "Reconectando...";
+    showScreen("waiting");
+    socket.emit("rejoin", { token: myToken });
+  }
+});
