@@ -4,7 +4,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #14532d66, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #0d94884d, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #05966945, transparent 62%);
-  --bg-photo: url("assets/bg-menu.jpg");
+  --bg-photo: url("assets/bg-menu-dark.jpg");
   --card: #101c16;
   --card-border: #24392f;
   --card-highlight: rgba(255, 255, 255, 0.045);
@@ -45,7 +45,7 @@
     radial-gradient(ellipse 780px 460px at 12% -8%, #bbf7d0aa, transparent 60%),
     radial-gradient(ellipse 640px 480px at 108% 8%, #99f6e499, transparent 58%),
     radial-gradient(ellipse 820px 560px at 50% 118%, #d9f99d99, transparent 62%);
-  --bg-photo: none;
+  --bg-photo: url("assets/bg-menu-light.jpg");
   --card: #ffffff;
   --card-border: #dbebe1;
   --card-highlight: rgba(255, 255, 255, 0.7);
@@ -1294,7 +1294,7 @@ header h1,
 }
 
 :root[data-theme="light"] {
-  --shell-grad: linear-gradient(165deg, #a7f3d0 0%, #bae6fd 55%, #eff6ff 100%);
+  --shell-grad: linear-gradient(165deg, rgba(167, 243, 208, 0.55) 0%, rgba(186, 230, 253, 0.4) 55%, rgba(239, 246, 255, 0.65) 100%);
   --shell-glass-bg: rgba(255, 255, 255, 0.55);
   --shell-glass-border: rgba(255, 255, 255, 0.7);
   --shell-glass-shadow: 0 8px 32px -12px rgba(15, 23, 42, 0.18);
