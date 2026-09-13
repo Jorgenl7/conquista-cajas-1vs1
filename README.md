@@ -8,8 +8,9 @@ dos jugadores. Backend en **FastAPI + Socket.IO** (WebSockets), frontend en
 
 1. Antes de empezar, los jugadores eligen el **modo de juego**:
    - 🎯 **Clásico**: sin poderes, gana quien más cajas conquiste.
-   - 🌀 **Caos**: el servidor oculta 4 poderes al azar entre las 25 cajas del
-     tablero. Nadie sabe dónde están hasta que alguien cierra esa caja.
+   - 🌀 **Caos**: cada jugador arranca la partida con un poder de cada tipo
+     en su inventario (💣 Bomba, ⭐ Multiplicador, 🧊 Hielo) y decide él mismo
+     cuándo usarlos, uno por uno, durante su propio turno.
 2. El tablero es una cuadrícula de **6×6 puntos** (25 cajas de 5×5). Por
    turnos, cada jugador traza una línea entre dos puntos adyacentes. Tiene 60
    segundos para hacerlo; si se le acaba el tiempo, el turno pasa
@@ -17,9 +18,12 @@ dos jugadores. Backend en **FastAPI + Socket.IO** (WebSockets), frontend en
 3. Si una línea completa el 4º lado de una caja, esa caja se pinta del color
    de quien la cerró, suma 1 punto (o más, ver poderes) y **ese jugador
    repite turno** inmediatamente.
-4. En **Modo Caos**, cerrar una caja con poder oculto activa su efecto:
+4. En **Modo Caos**, activar un poder es una acción gratuita: no gasta el
+   turno, así que se puede combinar con trazar la línea de siempre. Cada
+   poder solo se puede usar una vez por partida:
    - 💣 **Bomba**: destruye 2 líneas al azar ya colocadas por el rival.
-   - ⭐ **Multiplicador**: esa caja vale 3 puntos en vez de 1.
+   - ⭐ **Multiplicador**: arma la próxima caja que cierres para que valga 3
+     puntos en vez de 1.
    - 🧊 **Hielo**: cancela el próximo turno extra que gane el rival.
 5. Gana quien más cajas tenga cuando el tablero se completa (o si el rival se
    rinde). El primero en ganar **3 partidas** se corona campeón de la sesión
@@ -86,9 +90,9 @@ Cuadrados 1vs1/
     └── app.js
 ```
 
-El tablero (líneas, cajas y qué caja esconde qué poder) **vive solo en el
-servidor** (dentro de `game.py`); los poderes ocultos del Modo Caos nunca se
-envían al navegador hasta que alguien cierra esa caja concreta.
+El estado completo de la partida (tablero e inventario de poderes de cada
+jugador) **vive solo en el servidor** (dentro de `game.py`); el cliente solo
+recibe su propio inventario, nunca el del rival.
 
 ## Cómo funciona el emparejamiento
 

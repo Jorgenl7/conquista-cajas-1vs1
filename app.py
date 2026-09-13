@@ -63,13 +63,17 @@ def serialize_lines(room):
 
 def serialize_boxes(room):
     return [
-        {"row": row, "col": col, "owner": info["owner"], "points": info["points"], "power": info["power"]}
+        {"row": row, "col": col, "owner": info["owner"], "points": info["points"], "bonus": info["bonus"]}
         for (row, col), info in room.boxes.items()
     ]
 
 
 def board_payload(room):
     return {"lines": serialize_lines(room), "boxes": serialize_boxes(room)}
+
+
+def powers_payload(player):
+    return {"powers": player.powers, "multiplierArmed": player.multiplier_armed}
 
 
 async def start_room(room):
@@ -89,6 +93,7 @@ async def start_room(room):
                 "boxesOpponent": opponent.score,
                 **board_payload(room),
                 **session_score_payload(player, opponent),
+                **powers_payload(player),
             },
             to=player_sid,
         )
@@ -267,6 +272,7 @@ async def rejoin(sid, data):
         "boxesOpponent": opponent.score,
         **board_payload(room),
         **session_score_payload(player, opponent),
+        **powers_payload(player),
     }
 
     if room.finished:
@@ -346,6 +352,37 @@ async def draw_line(sid, data):
 
 
 @sio.event
+async def use_power(sid, data):
+    data = data or {}
+    power_type = str(data.get("power") or "")
+
+    result = games.use_power(sid, power_type)
+    if result is None:
+        await sio.emit("power_error", {"message": "No puedes usar ese poder ahora mismo."}, to=sid)
+        return
+
+    player = result["player"]
+    opponent = result["opponent"]
+    bomb_removed = result["bombRemoved"]
+
+    await sio.emit(
+        "power_used",
+        {
+            "by": player.sid,
+            "power": result["power"],
+            "bombRemoved": bomb_removed,
+            "remaining": player.powers,
+        },
+        to=player.sid,
+    )
+    await sio.emit(
+        "power_used",
+        {"by": player.sid, "power": result["power"], "bombRemoved": bomb_removed},
+        to=opponent.sid,
+    )
+
+
+@sio.event
 async def surrender(sid, data=None):
     result = games.surrender(sid)
     if result is None:
@@ -403,6 +440,7 @@ async def request_rematch(sid, data=None):
                 "boxesYou": player.score,
                 "boxesOpponent": opponent.score,
                 **session_score_payload(player, opponent),
+                **powers_payload(player),
             },
             to=player_sid,
         )

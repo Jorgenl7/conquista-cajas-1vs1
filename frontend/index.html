@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/style.css?v=2" />
+  <link rel="stylesheet" href="/static/style.css?v=3" />
 </head>
 <body>
   <div class="app">
@@ -282,7 +282,7 @@
           <button type="button" class="mode-option" data-mode="chaos">
             <span class="mode-icon">🌀</span>
             <strong>Caos</strong>
-            <small>4 poderes ocultos</small>
+            <small>3 poderes a tu elección</small>
           </button>
         </div>
         <button type="button" id="lobby-confirm-mode-btn" class="primary-btn">Empezar partida</button>
@@ -307,7 +307,7 @@
         <button type="button" class="mode-option" data-mode="chaos">
           <span class="mode-icon">🌀</span>
           <strong>Caos</strong>
-          <small>4 poderes ocultos</small>
+          <small>3 poderes a tu elección</small>
         </button>
       </div>
       <p class="error" id="quickmatch-error"></p>
@@ -348,6 +348,21 @@
         <div id="timer-fill" class="timer-fill"></div>
       </div>
 
+      <div id="powers-bar" class="powers-bar hidden">
+        <button type="button" class="power-btn" id="power-btn-bomb" data-power="bomb" title="Bomba: destruye 2 líneas al azar del rival">
+          <span class="power-btn-icon">💣</span>
+          <span class="power-btn-label">Bomba</span>
+        </button>
+        <button type="button" class="power-btn" id="power-btn-multiplier" data-power="multiplier" title="Multiplicador: tu próxima caja vale 3 puntos">
+          <span class="power-btn-icon">⭐</span>
+          <span class="power-btn-label">Multiplicador</span>
+        </button>
+        <button type="button" class="power-btn" id="power-btn-ice" data-power="ice" title="Hielo: cancela el próximo turno extra del rival">
+          <span class="power-btn-icon">🧊</span>
+          <span class="power-btn-label">Hielo</span>
+        </button>
+      </div>
+
       <div class="board-wrap" id="board-wrap">
         <svg id="board-svg" class="board-svg" xmlns="http://www.w3.org/2000/svg"></svg>
         <p id="game-toast" class="game-toast hidden"></p>
@@ -378,6 +393,6 @@
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/app.js?v=4"></script>
 </body>
 </html>

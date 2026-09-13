@@ -17,10 +17,17 @@ CHAMPION_WINS = 3
 MODES = ("classic", "chaos")
 DEFAULT_MODE = "classic"
 
-POWER_COUNT = 4
 POWER_TYPES = ("bomb", "multiplier", "ice")
 MULTIPLIER_POINTS = 3
 BOMB_LINES_REMOVED = 2
+
+
+def initial_powers(mode: str) -> dict:
+    """En Modo Caos cada jugador arranca con un cargador de cada poder, para
+    usar cuando quiera durante su turno. En Modo Clasico no hay poderes."""
+    if mode != "chaos":
+        return {}
+    return {power: 1 for power in POWER_TYPES}
 
 ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sin caracteres ambiguos (0/O, 1/I)
 ROOM_CODE_LENGTH = 5
@@ -92,6 +99,8 @@ class Player:
     score: int = 0
     wins: int = 0
     ice_debuff: bool = False
+    powers: dict = field(default_factory=dict)  # "bomb"/"multiplier"/"ice" -> cargas restantes
+    multiplier_armed: bool = False  # la proxima caja que cierre este jugador vale MULTIPLIER_POINTS
 
 
 @dataclass
@@ -125,8 +134,7 @@ class Room:
     players: dict  # sid -> Player
     turn_sid: str
     lines: dict = field(default_factory=dict)  # line_key -> sid propietario
-    boxes: dict = field(default_factory=dict)  # (row, col) -> {"owner","points","power"}
-    powers: dict = field(default_factory=dict)  # (row, col) -> power_type, oculto hasta conquistarse
+    boxes: dict = field(default_factory=dict)  # (row, col) -> {"owner","points","bonus"}
     finished: bool = False
     turn_token: int = 0
     last_winner_sid: Optional[str] = None
@@ -175,8 +183,14 @@ class GameManager:
 
     def _build_room(self, info1: dict, info2: dict, mode: str) -> Room:
         room_id = uuid.uuid4().hex[:8]
-        p1 = Player(sid=info1["sid"], name=info1["name"], avatar=info1["avatar"], token=info1["token"])
-        p2 = Player(sid=info2["sid"], name=info2["name"], avatar=info2["avatar"], token=info2["token"])
+        p1 = Player(
+            sid=info1["sid"], name=info1["name"], avatar=info1["avatar"], token=info1["token"],
+            powers=initial_powers(mode),
+        )
+        p2 = Player(
+            sid=info2["sid"], name=info2["name"], avatar=info2["avatar"], token=info2["token"],
+            powers=initial_powers(mode),
+        )
         first_sid = random.choice([p1.sid, p2.sid])
 
         room = Room(
@@ -184,7 +198,6 @@ class GameManager:
             mode=mode,
             players={p1.sid: p1, p2.sid: p2},
             turn_sid=first_sid,
-            powers=self._generate_powers() if mode == "chaos" else {},
         )
         self.rooms[room_id] = room
         self.sid_to_room[p1.sid] = room_id
@@ -192,12 +205,6 @@ class GameManager:
         self.token_to_room[p1.token] = room_id
         self.token_to_room[p2.token] = room_id
         return room
-
-    @staticmethod
-    def _generate_powers() -> dict:
-        all_boxes = [(r, c) for r in range(BOX_GRID) for c in range(BOX_GRID)]
-        chosen = random.sample(all_boxes, POWER_COUNT)
-        return {box: random.choice(POWER_TYPES) for box in chosen}
 
     def get_room(self, sid: str) -> Optional[Room]:
         room_id = self.sid_to_room.get(sid)
@@ -227,18 +234,13 @@ class GameManager:
             if (br, bc) in room.boxes or not box_is_complete(room.lines, br, bc):
                 continue
 
-            power = room.powers.pop((br, bc), None)
-            points = MULTIPLIER_POINTS if power == "multiplier" else 1
-            room.boxes[(br, bc)] = {"owner": sid, "points": points, "power": power}
+            bonus = player.multiplier_armed
+            if bonus:
+                player.multiplier_armed = False
+            points = MULTIPLIER_POINTS if bonus else 1
+            room.boxes[(br, bc)] = {"owner": sid, "points": points, "bonus": bonus}
             player.score += points
-
-            box_info = {"row": br, "col": bc, "owner": sid, "points": points, "power": power}
-            if power == "bomb":
-                box_info["bombRemoved"] = self._trigger_bomb(room, sid)
-            elif power == "ice":
-                opponent.ice_debuff = True
-                box_info["iceAppliedTo"] = opponent.sid
-            completed.append(box_info)
+            completed.append({"row": br, "col": bc, "owner": sid, "points": points, "bonus": bonus})
 
         result = {
             "room": room,
@@ -268,6 +270,33 @@ class GameManager:
         if not extra_turn:
             room.turn_sid = opponent.sid
         room.turn_token += 1
+        return result
+
+    def use_power(self, sid: str, power_type: str) -> Optional[dict]:
+        """Activa un poder del inventario del jugador. Es una accion gratuita:
+        no cambia el turno ni el cronometro, para que se pueda combinar con
+        trazar una linea en el mismo turno."""
+        room = self.get_room(sid)
+        if not room or room.finished or room.turn_sid != sid or room.mode != "chaos":
+            return None
+        if power_type not in POWER_TYPES:
+            return None
+
+        player = room.players[sid]
+        if player.powers.get(power_type, 0) <= 0:
+            return None
+
+        player.powers[power_type] -= 1
+        opponent = room.players[room.opponent_sid(sid)]
+        result = {"room": room, "player": player, "opponent": opponent, "power": power_type, "bombRemoved": []}
+
+        if power_type == "bomb":
+            result["bombRemoved"] = self._trigger_bomb(room, sid)
+        elif power_type == "multiplier":
+            player.multiplier_armed = True
+        elif power_type == "ice":
+            opponent.ice_debuff = True
+
         return result
 
     def _trigger_bomb(self, room: Room, sid: str) -> list:
@@ -355,10 +384,11 @@ class GameManager:
         for player in room.players.values():
             player.score = 0
             player.ice_debuff = False
+            player.multiplier_armed = False
+            player.powers = initial_powers(room.mode)
 
         room.lines = {}
         room.boxes = {}
-        room.powers = self._generate_powers() if room.mode == "chaos" else {}
 
         loser_sid = (
             room.opponent_sid(room.last_winner_sid) if room.last_winner_sid else random.choice(list(room.players))

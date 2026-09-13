@@ -970,7 +970,6 @@ const BOX_GRID = 5;
 const CELL = 56;
 const PAD = 18;
 const BOARD_SIZE = PAD * 2 + CELL * (DOT_GRID - 1);
-const POWER_ICONS = { bomb: "💣", multiplier: "⭐", ice: "🧊" };
 
 const waitingText = document.getElementById("waiting-text");
 const waitingCancelBtn = document.getElementById("waiting-cancel-btn");
@@ -986,6 +985,8 @@ const myBoxesAvatar = document.getElementById("my-boxes-avatar");
 const opponentBoxesAvatar = document.getElementById("opponent-boxes-avatar");
 const myBoxesCount = document.getElementById("my-boxes-count");
 const opponentBoxesCount = document.getElementById("opponent-boxes-count");
+const powersBar = document.getElementById("powers-bar");
+const powerButtons = Array.from(powersBar.querySelectorAll(".power-btn"));
 
 waitingCancelBtn.addEventListener("click", () => {
   socket.emit("cancel_lobby");
@@ -1006,6 +1007,66 @@ let boxLabelEls = {};
 let linesState = {};
 let boxesState = {};
 let gameToastTimeout = null;
+let myPowers = {};
+let multiplierArmed = false;
+
+function renderPowersBar() {
+  powersBar.classList.toggle("hidden", currentMode !== "chaos");
+  powerButtons.forEach((btn) => {
+    const power = btn.dataset.power;
+    const available = (myPowers[power] || 0) > 0;
+    btn.disabled = !isMyTurn || matchFinished || !available;
+    btn.classList.toggle("used", !available);
+    btn.classList.toggle("armed", power === "multiplier" && multiplierArmed);
+  });
+}
+
+powerButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.disabled) return;
+    resumeAudio();
+    socket.emit("use_power", { power: btn.dataset.power });
+  });
+});
+
+socket.on("power_used", ({ by, power, bombRemoved, remaining }) => {
+  const mine = by === socket.id;
+  if (mine && remaining) myPowers = remaining;
+
+  if (power === "bomb") {
+    sounds.powerBomb();
+    (bombRemoved || []).forEach((line) => removeLine(line));
+    boardWrap.classList.add("shake-board");
+    setTimeout(() => boardWrap.classList.remove("shake-board"), 420);
+    const count = (bombRemoved || []).length;
+    showGameToast(
+      mine
+        ? `💣 ¡Bomba activada! Has destruido ${count} línea${count === 1 ? "" : "s"} del rival.`
+        : `💣 ¡Tu rival ha activado la Bomba y ha destruido ${count} de tus líneas!`
+    );
+  } else if (power === "multiplier") {
+    sounds.powerMultiplier();
+    if (mine) multiplierArmed = true;
+    showGameToast(
+      mine
+        ? "⭐ ¡Multiplicador activado! Tu próxima caja valdrá 3 puntos."
+        : "⭐ ¡Tu rival ha activado el Multiplicador! Su próxima caja valdrá 3 puntos."
+    );
+  } else if (power === "ice") {
+    sounds.powerIce();
+    showGameToast(
+      mine
+        ? "🧊 ¡Has activado Hielo! El próximo turno extra de tu rival quedará cancelado."
+        : "🧊 ¡Tu rival ha activado Hielo! Tu próximo turno extra quedará cancelado."
+    );
+  }
+
+  renderPowersBar();
+});
+
+socket.on("power_error", ({ message }) => {
+  showGameToast(message);
+});
 
 function lineKey(type, row, col) {
   return `${type}-${row}-${col}`;
@@ -1160,8 +1221,8 @@ function markBoxClaimed(box, moverSid) {
   rect.classList.add("claimed", mine ? "mine" : "theirs", "pop");
   setTimeout(() => rect.classList.remove("pop"), 400);
 
-  if (box.power && label) {
-    label.textContent = POWER_ICONS[box.power] || "";
+  if (box.bonus && label) {
+    label.textContent = "⭐";
     label.classList.add("power-icon", "power-pop");
     setTimeout(() => label.classList.remove("power-pop"), 750);
   }
@@ -1171,22 +1232,12 @@ function handleCompletedBox(box, moverSid) {
   markBoxClaimed(box, moverSid);
   sounds.box();
 
-  if (box.power === "multiplier") {
-    sounds.powerMultiplier();
+  if (box.bonus) {
     floatScoreText(box.row, box.col, `⭐ +${box.points}`);
-  } else if (box.power === "bomb") {
-    sounds.powerBomb();
-    const removed = box.bombRemoved || [];
-    removed.forEach((line) => removeLine(line));
-    boardWrap.classList.add("shake-board");
-    setTimeout(() => boardWrap.classList.remove("shake-board"), 420);
-    if (removed.length) {
-      showGameToast(moverSid === socket.id ? "💣 ¡Bomba! Destruiste 2 líneas del rival." : "💣 ¡Tu rival ha destruido 2 de tus líneas!");
+    if (moverSid === socket.id) {
+      multiplierArmed = false;
+      renderPowersBar();
     }
-  } else if (box.power === "ice") {
-    sounds.powerIce();
-    const targetsMe = box.iceAppliedTo === socket.id;
-    showGameToast(targetsMe ? "🧊 ¡Tu próximo turno extra quedará congelado!" : "🧊 ¡Has congelado el próximo turno extra del rival!");
   }
 }
 
@@ -1203,6 +1254,7 @@ function setTurn(yourTurn, turnSeconds) {
   turnIndicator.className = "badge " + (yourTurn ? "badge-your-turn" : "badge-opponent-turn");
   if (yourTurn) sounds.yourTurn();
   startTurnTimer(turnSeconds);
+  renderPowersBar();
 }
 
 function resetMatchUI() {
@@ -1215,8 +1267,10 @@ function resetMatchUI() {
   opponentBoxesAvatar.textContent = opponentLabel.dataset.avatar || "🙂";
 }
 
-socket.on("match_found", ({ opponentName, opponentAvatar, mode, yourTurn, turnSeconds, boxesYou, boxesOpponent, scoreYou, scoreOpponent }) => {
+socket.on("match_found", ({ opponentName, opponentAvatar, mode, yourTurn, turnSeconds, boxesYou, boxesOpponent, scoreYou, scoreOpponent, powers, multiplierArmed: armed }) => {
   currentMode = mode;
+  myPowers = powers || {};
+  multiplierArmed = !!armed;
   buildBoard();
   opponentLabel.textContent = `${opponentAvatar} ${opponentName}`;
   opponentLabel.dataset.avatar = opponentAvatar;
@@ -1368,7 +1422,9 @@ socket.on("rematch_waiting", () => {
   rematchBtn.textContent = "Esperando a tu rival...";
 });
 
-socket.on("rematch_started", ({ yourTurn, turnSeconds, boxesYou, boxesOpponent, scoreYou, scoreOpponent }) => {
+socket.on("rematch_started", ({ yourTurn, turnSeconds, boxesYou, boxesOpponent, scoreYou, scoreOpponent, powers, multiplierArmed: armed }) => {
+  myPowers = powers || {};
+  multiplierArmed = !!armed;
   buildBoard();
   resetMatchUI();
   updateSessionScoreLabel(scoreYou, scoreOpponent);
@@ -1418,8 +1474,10 @@ socket.on("opponent_left", () => {
 });
 
 socket.on("rejoined", (data) => {
-  const { opponentName, opponentAvatar, mode, scoreYou, scoreOpponent, boxesYou, boxesOpponent, lines, boxes, state } = data;
+  const { opponentName, opponentAvatar, mode, scoreYou, scoreOpponent, boxesYou, boxesOpponent, lines, boxes, state, powers, multiplierArmed: armed } = data;
   currentMode = mode;
+  myPowers = powers || {};
+  multiplierArmed = !!armed;
   buildBoard();
   opponentLabel.textContent = `${opponentAvatar} ${opponentName}`;
   opponentLabel.dataset.avatar = opponentAvatar;
