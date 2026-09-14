@@ -1241,7 +1241,15 @@ function handleCompletedBox(box, moverSid) {
   }
 }
 
+function bumpEl(el) {
+  el.classList.remove("bump");
+  void el.offsetWidth;
+  el.classList.add("bump");
+}
+
 function updateBoxScore(you, opponent) {
+  if (myBoxesCount.textContent !== String(you)) bumpEl(myBoxesCount);
+  if (opponentBoxesCount.textContent !== String(opponent)) bumpEl(opponentBoxesCount);
   myBoxesCount.textContent = you;
   opponentBoxesCount.textContent = opponent;
 }

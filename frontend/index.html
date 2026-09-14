@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/style.css?v=6" />
+  <link rel="stylesheet" href="/static/style.css?v=7" />
 </head>
 <body>
   <div class="app">
@@ -194,7 +194,7 @@
       <div id="avatar-picker" class="avatar-picker"></div>
 
       <button type="button" id="profile-save-btn" class="primary-btn">Guardar</button>
-      <button type="button" id="profile-back-btn" class="link-btn">← Volver</button>
+      <button type="button" id="profile-back-btn" class="back-btn" aria-label="Volver">←</button>
     </section>
 
     <section id="settings-screen" class="screen hidden">
@@ -210,7 +210,7 @@
         <span class="settings-row-value" id="sound-value">Activado</span>
       </button>
 
-      <button type="button" id="settings-back-btn" class="link-btn">← Volver</button>
+      <button type="button" id="settings-back-btn" class="back-btn" aria-label="Volver">←</button>
     </section>
 
     <section id="friends-screen" class="screen hidden">
@@ -232,7 +232,7 @@
         </span>
       </button>
 
-      <button type="button" id="friends-back-btn" class="link-btn">← Volver</button>
+      <button type="button" id="friends-back-btn" class="back-btn" aria-label="Volver">←</button>
     </section>
 
     <section id="join-code-screen" class="screen hidden">
@@ -241,7 +241,7 @@
       <input type="text" id="join-code-input" class="code-input" maxlength="5" placeholder="ABCDE" autocomplete="off" />
       <p class="error" id="join-code-error"></p>
       <button type="button" id="join-code-check-btn" class="primary-btn">Unirme</button>
-      <button type="button" id="join-code-back-btn" class="link-btn">← Volver</button>
+      <button type="button" id="join-code-back-btn" class="back-btn" aria-label="Volver">←</button>
     </section>
 
     <section id="room-code-screen" class="screen hidden">
@@ -312,7 +312,7 @@
       </div>
       <p class="error" id="quickmatch-error"></p>
       <button type="button" id="quickmatch-search-btn" class="primary-btn">Buscar partida</button>
-      <button type="button" id="quickmatch-back-btn" class="link-btn">← Volver</button>
+      <button type="button" id="quickmatch-back-btn" class="back-btn" aria-label="Volver">←</button>
     </section>
 
     <section id="waiting-screen" class="screen hidden">
@@ -393,6 +393,6 @@
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script src="/static/app.js?v=4"></script>
+  <script src="/static/app.js?v=5"></script>
 </body>
 </html>

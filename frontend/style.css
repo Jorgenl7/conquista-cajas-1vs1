@@ -14,6 +14,11 @@
   --accent: #34d399;
   --accent-strong: #6ee7b7;
   --accent-dark: #059669;
+  /* Color fijo de "yo" en el tablero/chips de partida: a diferencia de
+     --accent (que los temas de la Tienda pueden recolorear), este nunca
+     cambia, para que "verde = yo" nunca choque con el azul del rival. */
+  --mine: #34d399;
+  --mine-strong: #6ee7b7;
   --success: #22c55e;
   --success-rgb: 34, 197, 94;
   --danger: #f87171;
@@ -55,6 +60,8 @@
   --accent: #059669;
   --accent-strong: #10b981;
   --accent-dark: #047857;
+  --mine: #059669;
+  --mine-strong: #10b981;
   --success: #16a34a;
   --success-rgb: 22, 163, 74;
   --danger: #dc2626;
@@ -239,9 +246,9 @@ header h1 span {
   justify-content: space-between;
   align-items: center;
   background: var(--input-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 15px 18px;
   margin-bottom: 12px;
   cursor: pointer;
   font-family: inherit;
@@ -275,7 +282,7 @@ header h1 span {
   width: 100%;
   background: var(--input-bg);
   border: 2px solid var(--card-border);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 16px;
   color: var(--text);
   font-family: "JetBrains Mono", monospace;
@@ -285,11 +292,14 @@ header h1 span {
   letter-spacing: 8px;
   text-transform: uppercase;
   margin: 16px 0;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .code-input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: var(--shadow-sm), 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .room-code-display {
@@ -367,19 +377,25 @@ header h1 span {
   background: var(--input-bg);
   border: 2px solid var(--card-border);
   color: var(--text);
-  border-radius: 10px;
-  padding: 12px 18px;
+  border-radius: 16px;
+  padding: 13px 18px;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   margin-top: 10px;
-  transition: border-color 0.15s ease, transform 0.1s ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .secondary-btn:hover {
   border-color: var(--accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.secondary-btn:active {
+  transform: translateY(0);
 }
 
 .copy-feedback {
@@ -414,12 +430,13 @@ header h1,
 }
 
 .screen {
+  position: relative;
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   padding: 32px;
   box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-highlight);
-  animation: screen-in 0.35s ease;
+  animation: screen-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .screen.hidden {
@@ -429,12 +446,47 @@ header h1,
 @keyframes screen-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
+}
+
+/* Botón redondo "← Volver" flotante en la esquina de las pantallas
+   secundarias, mismo lenguaje que los shell-round-btn del menú. */
+.back-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.back-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+}
+
+.screen h2:first-of-type {
+  padding: 0 44px;
 }
 
 .field-label {
@@ -471,8 +523,8 @@ header h1,
   width: 100%;
   max-width: 260px;
   background: var(--input-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--card-border);
+  border-radius: 999px;
   padding: 10px 14px;
   color: var(--text);
   font-size: 1.05rem;
@@ -498,20 +550,21 @@ header h1,
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 10px 6px;
+  padding: 12px 6px;
   background: var(--input-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-family: inherit;
   color: var(--text);
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .profile-chip:hover {
   border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .profile-chip strong {
@@ -552,12 +605,12 @@ header h1,
 }
 
 .avatar-option {
-  width: 44px;
-  height: 44px;
-  font-size: 1.3rem;
+  width: 46px;
+  height: 46px;
+  font-size: 1.35rem;
   background: var(--input-bg);
   border: 2px solid var(--card-border);
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -567,7 +620,7 @@ header h1,
 }
 
 .avatar-option:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .avatar-option.selected {
@@ -600,14 +653,19 @@ header h1,
 }
 
 .mode-option:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
   box-shadow: var(--shadow-md);
 }
 
 .mode-icon {
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   line-height: 1;
   margin-bottom: 2px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mode-option:hover .mode-icon {
+  transform: scale(1.15) rotate(-4deg);
 }
 
 .mode-option strong {
@@ -624,6 +682,7 @@ header h1,
 
 .mode-option.selected {
   border-color: var(--accent);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 16%, var(--input-bg)), var(--input-bg));
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
@@ -646,11 +705,12 @@ header h1,
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: #04121f;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 13px 18px;
-  font-size: 1rem;
-  font-weight: 700;
+  border-radius: 18px;
+  padding: 15px 18px;
+  font-size: 1.02rem;
+  font-weight: 800;
   font-family: inherit;
+  letter-spacing: -0.01em;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 8px 20px -8px var(--accent-dark);
@@ -686,16 +746,20 @@ header h1,
   margin-top: 12px;
   background: none;
   border: none;
+  border-radius: 999px;
   color: var(--muted);
+  font-weight: 700;
   font-size: 0.9rem;
   font-family: inherit;
-  text-decoration: underline;
+  text-align: center;
   cursor: pointer;
-  padding: 6px;
+  padding: 10px;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .link-btn:hover {
   color: var(--text);
+  background: var(--input-bg);
 }
 
 .error {
@@ -748,10 +812,10 @@ header h1,
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   background: var(--input-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--card-border);
+  border-radius: 999px;
   font-size: 0.95rem;
 }
 
@@ -824,14 +888,17 @@ header h1,
   background: var(--input-bg);
   border: 2px solid var(--card-border);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .boxes-chip-me {
-  border-color: var(--accent);
+  border-color: var(--mine);
+  box-shadow: var(--shadow-sm), 0 0 0 3px color-mix(in srgb, var(--mine) 18%, transparent);
 }
 
 .boxes-chip-opponent {
   border-color: var(--rival);
+  box-shadow: var(--shadow-sm), 0 0 0 3px color-mix(in srgb, var(--rival) 18%, transparent);
 }
 
 .boxes-chip-avatar {
@@ -852,11 +919,21 @@ header h1,
 }
 
 .boxes-chip-me .boxes-chip-count {
-  color: var(--accent-strong);
+  color: var(--mine-strong);
 }
 
 .boxes-chip-opponent .boxes-chip-count {
   color: var(--rival-strong);
+}
+
+.boxes-chip-count.bump {
+  animation: chip-bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes chip-bump {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.4); }
+  100% { transform: scale(1); }
 }
 
 .boxes-vs-icon {
@@ -864,12 +941,13 @@ header h1,
 }
 
 .timer-track {
-  height: 6px;
+  height: 9px;
   background: var(--input-bg);
   border: 1px solid var(--card-border);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 18px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .timer-fill {
@@ -910,20 +988,22 @@ header h1,
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 6px;
+  padding: 9px 6px;
   background: var(--input-bg);
   border: 2px solid var(--card-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text);
   font-family: inherit;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .power-btn:hover:not(:disabled) {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: var(--shadow-md);
 }
 
 .power-btn:disabled {
@@ -965,6 +1045,11 @@ header h1,
   position: relative;
   max-width: 380px;
   margin: 0 auto 6px;
+  padding: 16px;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--mine) 8%, var(--input-bg)), var(--input-bg));
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.14), var(--shadow-sm);
 }
 
 .board-svg {
@@ -990,20 +1075,23 @@ header h1,
 }
 
 .board-dot {
+  r: 6.5;
   fill: var(--muted);
-  opacity: 0.7;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 
 .board-line {
   stroke: var(--card-border);
-  stroke-width: 7;
+  stroke-width: 8;
   stroke-linecap: round;
   cursor: pointer;
-  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;
 }
 
 .board-svg:not(.not-my-turn) .board-line:not(.drawn):hover {
-  stroke: var(--accent);
+  stroke: var(--mine);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--mine) 55%, transparent));
 }
 
 .board-svg.not-my-turn .board-line:not(.drawn) {
@@ -1011,12 +1099,13 @@ header h1,
 }
 
 .board-line.drawn {
-  stroke-width: 8;
+  stroke-width: 10;
   cursor: default;
+  filter: drop-shadow(0 1.5px 0 rgba(0, 0, 0, 0.2));
 }
 
 .board-line.drawn.mine {
-  stroke: var(--accent-strong);
+  stroke: var(--mine-strong);
 }
 
 .board-line.drawn.theirs {
@@ -1035,28 +1124,33 @@ header h1,
 }
 
 .board-box {
+  rx: 11;
   fill: transparent;
   transition: fill 0.3s ease;
 }
 
 .board-box.claimed.mine {
   fill: var(--me-fill);
+  stroke: var(--mine-strong);
+  stroke-width: 1.5;
 }
 
 .board-box.claimed.theirs {
   fill: var(--rival-fill);
+  stroke: var(--rival-strong);
+  stroke-width: 1.5;
 }
 
 .board-box.pop {
-  animation: box-pop 0.4s ease;
+  animation: box-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-box: fill-box;
   transform-origin: center;
 }
 
 @keyframes box-pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  65% { transform: scale(1.08); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 .board-box-label {
@@ -1103,7 +1197,7 @@ header h1,
 .game-toast {
   position: absolute;
   left: 50%;
-  bottom: -6px;
+  bottom: -14px;
   transform: translate(-50%, 0);
   margin: 0;
   padding: 8px 16px;
@@ -1165,8 +1259,8 @@ header h1,
 
 .chat-messages li {
   max-width: 80%;
-  padding: 7px 11px;
-  border-radius: 10px;
+  padding: 8px 13px;
+  border-radius: 14px;
   font-size: 0.88rem;
   background: var(--input-bg);
   border: 1px solid var(--card-border);
@@ -1175,8 +1269,8 @@ header h1,
 
 .chat-messages li.own {
   align-self: flex-end;
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: color-mix(in srgb, var(--mine) 15%, var(--input-bg));
+  border-color: color-mix(in srgb, var(--mine) 35%, transparent);
 }
 
 .chat-messages .chat-author {
@@ -1195,8 +1289,8 @@ header h1,
   flex: 1;
   background: var(--input-bg);
   border: 1px solid var(--card-border);
-  border-radius: 8px;
-  padding: 9px 12px;
+  border-radius: 999px;
+  padding: 9px 14px;
   color: var(--text);
   font-family: inherit;
   font-size: 0.9rem;
@@ -1211,11 +1305,16 @@ header h1,
   background: var(--accent);
   color: #04121f;
   border: none;
-  border-radius: 8px;
-  padding: 9px 14px;
+  border-radius: 999px;
+  padding: 9px 16px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.chat-send-btn:active {
+  transform: scale(0.96);
 }
 
 .chat-send-btn:hover {
